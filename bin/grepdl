@@ -1,0 +1,131 @@
+#!/usr/bin/python3
+
+"""
+   Copyright  2021  Andrea Tedeschi  DontPanicO
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+"""
+
+import os
+import sys
+import subprocess
+import argparse
+
+
+__author__ = "DontPanicO"
+__version__ = "1.0"
+
+DEVNULL = open(os.devnull, 'wb')
+USAGE = """
+grepdl  [options] <container> <search>
+||============================================||
+||Examples:                                   ||
+||grepdl container '^thi.+ mine$' --regex     ||
+||grepdl container 'hello world'  --since 10m ||
+||============================================||
+"""
+
+
+if __name__ == '__main__':
+
+        # Inatialize the argument parser
+        parser = argparse.ArgumentParser(
+                        usage=USAGE,
+                        description="A tool to scan recursively a directory and grep in the content of its files",
+                )
+
+        parser.add_argument(
+                        "container",
+                        help="The container id or name",
+                )
+
+        parser.add_argument(
+                        "search",
+                        help="The text or the pattern to look for in files content",
+                )
+
+        parser.add_argument(
+                        "-r", "--regex",
+                        help="Search is regular expression",
+                        action="store_true", default=False,
+                )
+
+        parser.add_argument(
+                        "-i", "--case-insensitive",
+                        help="The script will acts case insensitive",
+                        action="store_true", default=False,
+                )
+
+        parser.add_argument(
+                        "-o", "--output",
+                        help="Redirect output to file",
+                        metavar="<file>", required=False,
+                )
+
+        parser.add_argument(
+                        "--since",
+                        help="Only logs since timestamps (YYYY-mm-ddThh:mm:ssZ) or relative (42m, 10h, etc)",
+                        metavar="<timestamp>", required=False,
+                )
+
+        parser.add_argument(
+                        "--until",
+                        help="Only logs until timestamps (YYYY-mm-ddThh:mm:ssZ) or relative (42m, 10h, etc)",
+                        metavar="<timestamp>", required=False,
+                )
+
+
+        # Parse args
+        args = parser.parse_args()
+
+        # Get postional arg value
+        search = args.search
+        container = args.container
+
+        # Store options in a dict object and define a string containing options
+        # that have to be included in the command
+        options = dict()
+        options['grep'] = dict()
+        options['dl'] = dict()
+        options['grep']['regex'] = "-E" if args.regex else ""
+        options['grep']['insensitive'] = "-i" if args.case_insensitive else ""
+        options['dl']['since'] = f"--since {args.since}" if args.since else ""
+        options['dl']['until'] = f"--until {args.until}" if args.until else ""
+        parsed_grep_options = " ".join(options['grep'].values()).strip()
+        parsed_dl_options = " ".join(options['dl'].values()).strip()
+
+        # Define the right command.
+        command = f"docker logs {parsed_dl_options} {container} | xargs -L1 echo | grep {parsed_grep_options} {search}"
+        try:
+            result = subprocess.check_output(command, shell=True, stdin=DEVNULL, stderr=DEVNULL).decode().strip()
+        except subprocess.CalledProcessError as e:
+            exitcode = e.returncode
+            if exitcode == 1:
+                if os.getuid() != 0:
+                    print("grepdl: you have not required privileges)
+                    sys.exit(1)
+                else:
+                    print(f"grepdl: '{search}' is not in docker logs, or container does not exists")
+                    sys.exit(1)
+
+        if args.output:
+            with open(args.output, 'w') as fh:
+                fh.write(result)
+            sys.exit(0)
+
+        if not result:
+            print(f"grepdl: '{search}' is not in docker logs")
+            sys.exit(0)
+        else:
+            print(result)
+            sys.exit(0)
