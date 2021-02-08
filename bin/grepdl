@@ -112,7 +112,7 @@ if __name__ == '__main__':
             exitcode = e.returncode
             if exitcode == 1:
                 if os.getuid() != 0:
-                    print("grepdl: you have not required privileges)
+                    print("grepdl: you have not required privileges")
                     sys.exit(1)
                 else:
                     print(f"grepdl: '{search}' is not in docker logs, or container does not exists")
