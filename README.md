@@ -1,8 +1,32 @@
+[![Python 3.6|3.9](https://img.shields.io/badge/python-3.6|3.9-blue.svg)](https://www.python.org/) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-red.svg)](https://www.gnu.org/licenses/gpl-3.0) [![release 1.0](https://img.shields.io/badge/release-1.0-yellow.svg)](https://github.com/DontPanicO/grepdl/releases/tag/v1.0) [![pypi 1.0](https://img.shields.io/badge/pypi-1.0-purple.svg)](https://pypi.org/project/grepdl/)
+
 # grepdl
 
 A simple command line interface to grep live text stream of docker logs
 
-### Install
+## Installation
+
+N.B. Installation cloning the repository should be done for development pourposes only.
+
+#### Install with dpkg
+
+```console
+$ wget http://andreatedeschi.uno/grepdl/grepdl_1.0-1_all.deb
+$ sudo dpkg --install grepdl_1.0-1_all.deb
+```
+
+#### Install with pip
+
+```console
+$ sudo python3 -m pip install grepdl
+```
+
+#### Install with rpm
+
+An rpm package will be provided soon.
+Keep track at: http://andreatedeschi.uno/grepdl
+
+#### Install cloning the repo 
 
 ```console
 git clone https://git.metodogroup.it/andrea.tedeschi/grepdl.git
@@ -17,7 +41,7 @@ python3 setup.py install
 
 N.B. A deb and an rpm will be provided soon
 
-### Usage
+## Usage
 
 ```console
 grepdl  [options] <container> <search>
