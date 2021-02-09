@@ -23,8 +23,10 @@ $ sudo python3 -m pip install grepdl
 
 #### Install with rpm
 
-An rpm package will be provided soon.
-Keep track at: http://andreatedeschi.uno/grepdl
+```console
+$ wget http://andreatedeschi.uno/grepdl/grepdl-1.0-1.noarch.rpm
+$ sudo rpm --install grepdl-1.0-1.noarch.rpm
+```
 
 #### Install cloning the repo 
 
@@ -38,8 +40,6 @@ N.B. If you have not python3-pip installed, last command is:
 ```console
 python3 setup.py install
 ```
-
-N.B. A deb and an rpm will be provided soon
 
 ## Usage
 
