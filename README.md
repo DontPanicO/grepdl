@@ -31,14 +31,14 @@ $ sudo rpm --install grepdl-1.0-1.noarch.rpm
 #### Install cloning the repo 
 
 ```console
-git clone https://git.metodogroup.it/andrea.tedeschi/grepdl.git
-cd grepdl
-python3 -m pip install .
+$ git clone https://git.metodogroup.it/andrea.tedeschi/grepdl.git
+$ cd grepdl
+$ python3 -m pip install .
 ```
 N.B. If you have not python3-pip installed, last command is:
 
 ```console
-python3 setup.py install
+$ python3 setup.py install
 ```
 
 ## Usage
