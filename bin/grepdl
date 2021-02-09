@@ -21,11 +21,14 @@ import sys
 import subprocess
 import argparse
 
+from tempfile import TemporaryFile
+
 
 __author__ = "DontPanicO"
 __version__ = "1.0"
 
 DEVNULL = open(os.devnull, 'wb')
+ERROR = TemporaryFile()
 USAGE = """
 grepdl  [options] <container> <search>
 ||============================================||
@@ -34,6 +37,15 @@ grepdl  [options] <container> <search>
 ||grepdl container 'hello world'  --since 10m ||
 ||============================================||
 """
+
+
+def exit_(status=0):
+    """
+    :param status: The exit code
+    Close the tempfile and exit with the specified exit code
+    """
+    ERROR.close()
+    sys.exit(status)
 
 
 if __name__ == '__main__':
@@ -84,12 +96,6 @@ if __name__ == '__main__':
                         metavar="<timestamp>", required=False,
                 )
 
-        parser.add_argument(
-                        "--version",
-                        help="Print version and quits",
-                        action="store_true", default=False
-                )
-
 
         # Parse args
         args = parser.parse_args()
@@ -97,11 +103,6 @@ if __name__ == '__main__':
         # Get postional arg value
         search = args.search
         container = args.container
-
-        # Print version and exit
-        if args.version:
-            print(f"grepdl {__version__}")
-            sys.exit(0)
 
         # Store options in a dict object and define a string containing options
         # that have to be included in the command
@@ -115,28 +116,32 @@ if __name__ == '__main__':
         parsed_grep_options = " ".join(options['grep'].values()).strip()
         parsed_dl_options = " ".join(options['dl'].values()).strip()
 
-        # Define the right command.
+        # Define and run the command.
         command = f"docker logs {parsed_dl_options} {container} | xargs -L1 echo | grep {parsed_grep_options} {search}"
         try:
-            result = subprocess.check_output(command, shell=True, stdin=DEVNULL, stderr=DEVNULL).decode().strip()
-        except subprocess.CalledProcessError as e:
-            exitcode = e.returncode
-            if exitcode == 1:
-                if os.getuid() != 0:
-                    print("grepdl: you have not required privileges")
-                    sys.exit(1)
-                else:
-                    print(f"grepdl: '{search}' is not in docker logs, or container does not exists")
-                    sys.exit(1)
+            result = subprocess.check_output(command, shell=True, stdin=DEVNULL, stderr=ERROR).decode().strip()
+        except subprocess.CalledProcessError:
+            ERROR.seek(0)
+            stderr_ = ERROR.read().decode().rstrip()
+            if "permission denied" in stderr_:
+                print("grepdl: you have not the required privileges")
+            elif "No such container" in stderr_:
+                print(f"grepdl: container {container} does not exists")
+            elif "command not found" in stderr_:
+                print("grepdl: docker logs: command not found")
+            else:
+                print(f"grepdl: '{search}' is not in docker logs")
+            exit_(1)
 
         if args.output:
             with open(args.output, 'w') as fh:
-                fh.write(result)
-            sys.exit(0)
+                fh.write(result + "\n")
+            exit_(0)
 
+        # It might be unnecessary
         if not result:
             print(f"grepdl: '{search}' is not in docker logs")
-            sys.exit(0)
+            exit_(1)
         else:
             print(result)
-            sys.exit(0)
+            exit_(0)
