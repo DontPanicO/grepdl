@@ -47,8 +47,8 @@ $ python3 setup.py install
 grepdl  [options] <container> <search>
 ||=============================================||
 ||Examples:                                    ||
-||grepdl '^thi.+ mine$' container --regex      ||
-||grepdl 'hello world'  container --since 10m  ||
+||grepdl container '^thi.+ mine$' --regex      ||
+||grepdl container 'hello world' --since 10m   ||
 ||=============================================||
 
 A tool to scan recursively a directory and grep in the content of its files
