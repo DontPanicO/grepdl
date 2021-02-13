@@ -132,6 +132,8 @@ if __name__ == '__main__':
             else:
                 print(f"grepdl: '{search}' is not in docker logs")
             exit_(1)
+        except KeyboardInterrupt:
+            exit_(1)
 
         if args.output:
             with open(args.output, 'w') as fh:
